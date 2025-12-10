@@ -131,12 +131,13 @@ public class Socks5Proxy {
     void handleClientRead(SelectionKey key, ClientConnection conn) throws IOException {
         int read = conn.client.read(conn.clientBuffer);
 
+        // Ошибка чтения - клиент закрыл соединение.
         if (read == -1) {
             conn.clientClosed = true;
             if (conn.state == State.TUNNELING && conn.remote != null) {
-                conn.remote.shutdownOutput();
+                conn.remote.shutdownOutput(); // Закрывает только отправку данных.
                 if (conn.remoteClosed) {
-                    cleanupConnection(conn);
+                    cleanupConnection(conn); // Полностью чистим соединение только когда обе стороны закрыты.
                 }
             } else {
                 cleanupConnection(conn);

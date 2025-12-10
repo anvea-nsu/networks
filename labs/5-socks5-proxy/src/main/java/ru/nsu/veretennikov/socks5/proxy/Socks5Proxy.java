@@ -233,8 +233,8 @@ public class Socks5Proxy {
                 conn.clientBuffer.compact();
                 return;
             }
-            addressLen = conn.clientBuffer.get() & 0xFF;
-        } else {
+            addressLen = conn.clientBuffer.get() & 0xFF; // Расширяем до знакового int,
+        } else {                                         // чтобы избежать проблем с отрицательными значениями.
             System.err.println("Unsupported address type: " + conn.addressType);
             sendError(conn, (byte) 8);
             return;
@@ -341,7 +341,7 @@ public class Socks5Proxy {
 
         System.out.println("Initiating connection to " + addr + ":" + conn.targetPort + ", immediate: " + connected);
 
-        if (connected) {
+        if (connected) { // Соединение установлено сразу.
             finishConnection(key, conn);
         } else {
             conn.remote.register(selector, SelectionKey.OP_CONNECT, conn);

@@ -200,7 +200,7 @@ public class Socks5Proxy {
 
         ByteBuffer response = ByteBuffer.allocate(2);
         response.put((byte) 5);
-        response.put((byte) 0); // No auth
+        response.put((byte) 0);
         response.flip();
         conn.client.write(response);
 
@@ -218,7 +218,7 @@ public class Socks5Proxy {
         conn.clientBuffer.mark();
         byte version = conn.clientBuffer.get();
         byte cmd = conn.clientBuffer.get();
-        conn.clientBuffer.get(); // reserved
+        conn.clientBuffer.get();
         conn.addressType = conn.clientBuffer.get();
 
         System.out.println("Request - cmd: " + cmd + ", addrType: " + conn.addressType);
@@ -365,14 +365,12 @@ public class Socks5Proxy {
     }
 
     void finishConnection(SelectionKey clientKey, ClientConnection conn) throws IOException {
-        // Register remote for reading
         SelectionKey remoteKey = conn.remote.register(selector, SelectionKey.OP_READ);
         connections.put(remoteKey, conn);
 
-        // Send success response
         ByteBuffer response = ByteBuffer.allocate(10);
         response.put((byte) 5);
-        response.put((byte) 0); // Success
+        response.put((byte) 0);
         response.put((byte) 0);
         response.put((byte) 1);
         response.putInt(0);
@@ -384,7 +382,6 @@ public class Socks5Proxy {
 
         conn.state = State.TUNNELING;
 
-        // If there's buffered data from client, send it
         if (conn.clientBuffer.position() > 0) {
             conn.clientBuffer.flip();
             tunnelToRemote(clientKey, conn);

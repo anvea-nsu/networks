@@ -17,7 +17,7 @@ public class Socks5Proxy {
     private int dnsRequestId = 1;
 
     enum State {
-        GREETING, AUTH, REQUEST, CONNECTING, DNS_RESOLVING, TUNNELING
+        GREETING, REQUEST, CONNECTING, DNS_RESOLVING, TUNNELING
     }
 
     class ClientConnection {
@@ -137,7 +137,7 @@ public class Socks5Proxy {
             if (conn.state == State.TUNNELING && conn.remote != null) {
                 conn.remote.shutdownOutput(); // Закрывает только отправку данных.
                 if (conn.remoteClosed) {
-                    cleanupConnection(conn); // Полностью чистим соединение только когда обе стороны закрыты.
+                    cleanupConnection(conn); // Полностью чистим соединение, только когда обе стороны закрыты.
                 }
             } else {
                 cleanupConnection(conn);
@@ -186,8 +186,8 @@ public class Socks5Proxy {
             return;
         }
 
-        byte version = conn.clientBuffer.get();
-        byte nmethods = conn.clientBuffer.get();
+        byte version = conn.clientBuffer.get();     // VER
+        byte nmethods = conn.clientBuffer.get();    // NMETHODS
 
         System.out.println("SOCKS version: " + version + ", methods: " + nmethods);
 
@@ -196,12 +196,12 @@ public class Socks5Proxy {
             return;
         }
 
-        conn.clientBuffer.position(conn.clientBuffer.position() + nmethods);
+        conn.clientBuffer.position(conn.clientBuffer.position() + nmethods); // пропускаем METHODS
         conn.clientBuffer.compact();
 
         ByteBuffer response = ByteBuffer.allocate(2);
-        response.put((byte) 5);
-        response.put((byte) 0);
+        response.put((byte) 5); // VER
+        response.put((byte) 0); // METHOD (NO AUTH)
         response.flip();
         conn.client.write(response);
 
@@ -217,10 +217,10 @@ public class Socks5Proxy {
         }
 
         conn.clientBuffer.mark();
-        byte version = conn.clientBuffer.get();
-        byte cmd = conn.clientBuffer.get();
-        conn.clientBuffer.get();
-        conn.addressType = conn.clientBuffer.get();
+        byte version = conn.clientBuffer.get();     // VER
+        byte cmd = conn.clientBuffer.get();         // CMD
+        conn.clientBuffer.get();                    // RSV
+        conn.addressType = conn.clientBuffer.get(); // ATYP
 
         System.out.println("Request - cmd: " + cmd + ", addrType: " + conn.addressType);
 
@@ -354,7 +354,7 @@ public class Socks5Proxy {
 
         System.out.println("Finishing connection...");
 
-        if (!remote.finishConnect()) {
+        if (!remote.finishConnect()) { // выдаст значение false, если процесс подключения еще не завершен.
             System.err.println("finishConnect returned false");
             return;
         }
@@ -370,12 +370,12 @@ public class Socks5Proxy {
         connections.put(remoteKey, conn);
 
         ByteBuffer response = ByteBuffer.allocate(10);
-        response.put((byte) 5);
-        response.put((byte) 0);
-        response.put((byte) 0);
-        response.put((byte) 1);
-        response.putInt(0);
-        response.putShort((short) 0);
+        response.put((byte) 5);         // VER
+        response.put((byte) 0);         // REP (код ответа - успех)
+        response.put((byte) 0);         // RSV
+        response.put((byte) 1);         // ATYP (IPv4)
+        response.putInt(0);       // BND.ADDR
+        response.putShort((short) 0);   // DND.PORT
         response.flip();
         conn.client.write(response);
 

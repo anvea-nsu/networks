@@ -309,7 +309,7 @@ public class Socks5Proxy {
         }
 
         for (Record answer : answers) {
-            if (answer instanceof ARecord) {
+            if (answer instanceof ARecord) { // перебираем все A-записи (IPv4 адреса).
                 InetAddress addr = ((ARecord) answer).getAddress();
                 System.out.println("Resolved " + conn.targetHost + " to " + addr);
                 SelectionKey key = findKeyForConnection(conn);
@@ -397,7 +397,7 @@ public class Socks5Proxy {
 
         int written = conn.remote.write(conn.clientBuffer);
 
-        if (conn.clientBuffer.hasRemaining()) {
+        if (conn.clientBuffer.hasRemaining()) { // если остались непрочитанные данные, регистрируем интерес на запись.
             SelectionKey remoteKey = findRemoteKey(conn);
             if (remoteKey != null) {
                 remoteKey.interestOps(remoteKey.interestOps() | SelectionKey.OP_WRITE);
@@ -418,7 +418,7 @@ public class Socks5Proxy {
 
         int written = conn.client.write(conn.remoteBuffer);
 
-        if (conn.remoteBuffer.hasRemaining()) {
+        if (conn.remoteBuffer.hasRemaining()) { // если буфер отправлен не полностью, регистрируем интерес на запись.
             SelectionKey clientKey = findKeyForConnection(conn);
             if (clientKey != null) {
                 clientKey.interestOps(clientKey.interestOps() | SelectionKey.OP_WRITE);

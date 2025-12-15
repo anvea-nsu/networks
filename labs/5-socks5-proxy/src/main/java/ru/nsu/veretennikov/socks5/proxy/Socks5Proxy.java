@@ -182,7 +182,7 @@ public class Socks5Proxy {
 
     void handleGreeting(SelectionKey key, ClientConnection conn) throws IOException {
         if (conn.clientBuffer.remaining() < 2) {
-            conn.clientBuffer.compact();
+            conn.clientBuffer.compact(); // переносит непрочитанные данные от position до limit в начало буфера.
             return;
         }
 
@@ -240,7 +240,7 @@ public class Socks5Proxy {
             return;
         }
 
-        if (conn.clientBuffer.remaining() < addressLen + 2) {
+        if (conn.clientBuffer.remaining() < addressLen + 2) { // + 2 для порта
             conn.clientBuffer.reset();
             conn.clientBuffer.compact();
             return;
@@ -275,10 +275,10 @@ public class Socks5Proxy {
 
         Message query = Message.newQuery(Record.newRecord(Name.fromString(conn.targetHost + "."), Type.A, DClass.IN));
         query.getHeader().setID(conn.dnsId);
-        byte[] queryBytes = query.toWire();
+        byte[] queryBytes = query.toWire(); // преобразование в байты
 
-        ResolverConfig config = ResolverConfig.getCurrentConfig();
-        InetSocketAddress dnsServer = config.servers().get(0);
+        ResolverConfig config = ResolverConfig.getCurrentConfig();  // читает DNS настройки системы
+        InetSocketAddress dnsServer = config.servers().get(0);      // берем первый DNS сервер из списка
         System.out.println("Sending DNS query to " + dnsServer + " for " + conn.targetHost);
         dnsChannel.send(ByteBuffer.wrap(queryBytes), dnsServer);
     }

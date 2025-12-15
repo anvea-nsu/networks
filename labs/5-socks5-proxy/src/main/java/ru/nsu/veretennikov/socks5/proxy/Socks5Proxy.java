@@ -259,11 +259,11 @@ public class Socks5Proxy {
 
         if (conn.addressType == 1) {
             InetAddress addr = InetAddress.getByAddress(conn.addressBytes);
-            System.out.println("Connecting to " + addr + ":" + conn.targetPort);
+            System.out.println("---Connecting to " + addr + ":" + conn.targetPort);
             connectToRemote(key, conn, addr);
         } else {
             conn.targetHost = new String(conn.addressBytes);
-            System.out.println("Resolving " + conn.targetHost + ":" + conn.targetPort);
+            System.out.println("---Resolving " + conn.targetHost + ":" + conn.targetPort);
             resolveDns(key, conn);
         }
     }
